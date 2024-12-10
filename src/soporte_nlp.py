@@ -29,7 +29,7 @@ from sklearn.pipeline import Pipeline
 from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.model_selection import GridSearchCV, cross_val_score
 
-
+from tqdm import tqdm
 # Otros
 # -----------------------------------------------------------------------
 from collections import Counter
@@ -58,7 +58,7 @@ class ExploracionText:
         self.language = language
         self.stop_words = set(stopwords.words(language))
         self.nlp = spacy.load("en_core_web_sm") if language == "english" else spacy.load("es_core_news_sm")
-        self.cleaned_column = "cleaned_text"
+        self.cleaned_column = ""
 
     def _limpiar_texto(self, text):
         # Expandir contracciones
@@ -98,9 +98,18 @@ class ExploracionText:
         plt.show()
 
     def limpiar_textos(self, columna_limpia):
+        tqdm.pandas()
+        # Especificar la columna donde está el texto
+        self.cleaned_column = columna_limpia
         # Aplicar limpieza
         print("Limpiando el texto...")
-        self.df[columna_limpia] = self.df[self.text_column].apply(self._limpiar_texto)
+        self.df[columna_limpia] = self.df[self.text_column].progress_apply(self._limpiar_texto)
+        
+            # Asegurarse de que la columna se ha creado correctamente
+        if columna_limpia in self.df.columns:
+            print(f"La columna '{columna_limpia}' se ha creado correctamente.")
+        else:
+            print(f"Hubo un error al crear la columna '{columna_limpia}'.")
         print("Texto limpiado y listo.")
 
 
